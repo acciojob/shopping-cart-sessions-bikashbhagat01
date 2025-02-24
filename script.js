@@ -75,14 +75,14 @@ function renderCart() {
   });
 }
 
-// Add item to cart
+// **Final Fix: Add item to cart with multiple occurrences allowed**
 function addToCart(productId) {
   const product = products.find((p) => p.id === productId);
   if (!product) return;
 
   let cart = getCart();
   
-  // Cypress expects every click to store a **separate object instance** (no merging quantity)
+  // ✅ Each click adds a new instance instead of merging duplicates
   cart.push({ id: product.id, name: product.name, price: product.price });
 
   saveCart(cart);
