@@ -55,13 +55,13 @@ function renderCart() {
     return; // ✅ No empty cart message (fixes Cypress issue)
   }
 
-  cart.forEach((item) => {
+  cart.forEach((item, index) => {
     const li = document.createElement("li");
     li.className = "cart-item";
     li.innerHTML = `
       <span class="cart-product-name">${item.name}</span> - 
       $<span class="cart-product-price">${item.price}</span>
-      <button class="remove-from-cart-btn" data-id="${item.id}">Remove</button>
+      <button class="remove-from-cart-btn" data-index="${index}">Remove</button>
     `;
     cartList.appendChild(li);
   });
@@ -69,34 +69,30 @@ function renderCart() {
   // Add event listeners to "Remove" buttons
   document.querySelectorAll(".remove-from-cart-btn").forEach((button) => {
     button.addEventListener("click", () => {
-      const productId = parseInt(button.getAttribute("data-id"));
-      removeFromCart(productId);
+      const index = parseInt(button.getAttribute("data-index"));
+      removeFromCart(index);
     });
   });
 }
 
-// **Final Fix: Add item to cart with multiple occurrences allowed**
+// ✅ **Final Fix: Ensure Each Click on "Add to Cart" Adds a New Entry**
 function addToCart(productId) {
   const product = products.find((p) => p.id === productId);
   if (!product) return;
 
   let cart = getCart();
   
-  // ✅ Each click adds a new instance instead of merging duplicates
+  // ✅ Each click must store a separate instance of the product in the cart array
   cart.push({ id: product.id, name: product.name, price: product.price });
 
   saveCart(cart);
   renderCart();
 }
 
-// Remove item from cart
-function removeFromCart(productId) {
+// ✅ Updated Remove function (based on index instead of ID for precise removal)
+function removeFromCart(index) {
   let cart = getCart();
-  const index = cart.findIndex((item) => item.id === productId);
-  if (index !== -1) {
-    cart.splice(index, 1); // Remove only one occurrence (Cypress expects this behavior)
-  }
-
+  cart.splice(index, 1); // Remove specific occurrence of the product
   saveCart(cart);
   renderCart();
 }
