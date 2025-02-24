@@ -58,20 +58,17 @@ function renderCart() {
   let total = 0;
 
   cart.forEach((item) => {
-    const product = products.find((p) => p.id === item.id);
-    if (product) {
-      const li = document.createElement("li");
-      li.className = "cart-item";
-      li.innerHTML = `
-        <span class="cart-product-name">${product.name}</span> - 
-        $<span class="cart-product-price">${product.price}</span> x 
-        <span class="cart-product-quantity">${item.quantity}</span> = 
-        $<span class="cart-product-total">${product.price * item.quantity}</span>
-        <button class="remove-from-cart-btn" data-id="${product.id}">Remove</button>
-      `;
-      cartList.appendChild(li);
-      total += product.price * item.quantity;
-    }
+    const li = document.createElement("li");
+    li.className = "cart-item";
+    li.innerHTML = `
+      <span class="cart-product-name">${item.name}</span> - 
+      $<span class="cart-product-price">${item.price}</span> x 
+      <span class="cart-product-quantity">${item.quantity}</span> = 
+      $<span class="cart-product-total">${item.price * item.quantity}</span>
+      <button class="remove-from-cart-btn" data-id="${item.id}">Remove</button>
+    `;
+    cartList.appendChild(li);
+    total += item.price * item.quantity;
   });
 
   // Display total
@@ -92,12 +89,13 @@ function renderCart() {
 // Add item to cart
 function addToCart(productId) {
   let cart = getCart();
+  const product = products.find((p) => p.id === productId);
   const existingItem = cart.find((item) => item.id === productId);
 
   if (existingItem) {
     existingItem.quantity += 1;
   } else {
-    cart.push({ id: productId, quantity: 1 });
+    cart.push({ id: product.id, name: product.name, price: product.price, quantity: 1 });
   }
 
   saveCart(cart);
@@ -118,7 +116,7 @@ function clearCart() {
   renderCart();
 }
 
-// Event listener for "Clear Cart" button (✅ Removed `confirm()` to fix Cypress issue)
+// Event listener for "Clear Cart" button
 clearCartBtn.addEventListener("click", clearCart);
 
 // Initial render
