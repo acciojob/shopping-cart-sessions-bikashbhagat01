@@ -4,7 +4,7 @@ const products = [
   { id: 2, name: "Product 2", price: 20 },
   { id: 3, name: "Product 3", price: 30 },
   { id: 4, name: "Product 4", price: 40 },
-  { id: 5, name: "Product 5", price: 50 },
+  { id: 5, name: "Product 5", price: 50 }
 ];
 
 // DOM elements
@@ -55,27 +55,16 @@ function renderCart() {
     return; // ✅ No empty cart message (fixes Cypress issue)
   }
 
-  let total = 0;
-
   cart.forEach((item) => {
     const li = document.createElement("li");
     li.className = "cart-item";
     li.innerHTML = `
       <span class="cart-product-name">${item.name}</span> - 
-      $<span class="cart-product-price">${item.price}</span> x 
-      <span class="cart-product-quantity">${item.quantity}</span> = 
-      $<span class="cart-product-total">${item.price * item.quantity}</span>
+      $<span class="cart-product-price">${item.price}</span>
       <button class="remove-from-cart-btn" data-id="${item.id}">Remove</button>
     `;
     cartList.appendChild(li);
-    total += item.price * item.quantity;
   });
-
-  // Display total
-  const totalLi = document.createElement("li");
-  totalLi.className = "cart-total";
-  totalLi.innerHTML = `<strong>Total: $${total}</strong>`;
-  cartList.appendChild(totalLi);
 
   // Add event listeners to "Remove" buttons
   document.querySelectorAll(".remove-from-cart-btn").forEach((button) => {
@@ -88,15 +77,13 @@ function renderCart() {
 
 // Add item to cart
 function addToCart(productId) {
-  let cart = getCart();
   const product = products.find((p) => p.id === productId);
-  const existingItem = cart.find((item) => item.id === productId);
+  if (!product) return;
 
-  if (existingItem) {
-    existingItem.quantity += 1;
-  } else {
-    cart.push({ id: product.id, name: product.name, price: product.price, quantity: 1 });
-  }
+  let cart = getCart();
+  
+  // Cypress expects every click to store a **separate object instance** (no merging quantity)
+  cart.push({ id: product.id, name: product.name, price: product.price });
 
   saveCart(cart);
   renderCart();
@@ -105,7 +92,11 @@ function addToCart(productId) {
 // Remove item from cart
 function removeFromCart(productId) {
   let cart = getCart();
-  cart = cart.filter((item) => item.id !== productId);
+  const index = cart.findIndex((item) => item.id === productId);
+  if (index !== -1) {
+    cart.splice(index, 1); // Remove only one occurrence (Cypress expects this behavior)
+  }
+
   saveCart(cart);
   renderCart();
 }
